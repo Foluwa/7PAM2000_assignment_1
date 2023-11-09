@@ -22,14 +22,17 @@ https://finances.worldbank.org/Loans-and-Credits/IDA-Statement-of-Credits-and-Gr
 
 
 ### How to run
+Download the csv data and put in the root directory
 
+### Setup python virtual environment and install packages
 `python3 -m venv assignment_env`
 
 `source assignment_env/bin/activate`
 
-`deactivate`
+`pip install requirements.txt`
 
-`pip freeze > requirements.txt`
+then run 
 
-
-### Folder Structure
+```
+python main.py
+```
