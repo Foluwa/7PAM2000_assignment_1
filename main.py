@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from matplotlib.ticker import FuncFormatter
 
 
@@ -10,12 +9,14 @@ def billions_formatter(x, pos):
     return f'{x / 1e9:.2f}B'
 
 
-def draw_pie_chart():
-    """ Draw pie chart """
-    # Increase the image size to 8 inches wide and 8 inches high
+def draw_pie_chart(dataframe):
+    """ Function to create a pie chart.
+    Arguments: A dataframe with a column "Credit Status".
+    """
+    # Increase the image size to 14 inches wide and 8 inches high
     plt.figure(figsize=(14, 8))
 
-    credit_status = df['Credit Status'].value_counts()
+    credit_status = dataframe['Credit Status'].value_counts()
 
     # Create a pie chart with percentages shown on the chart
     plt.pie(credit_status, labels=credit_status.index, colors=colors, explode=explode, autopct='%1.1f%%')
@@ -30,61 +31,29 @@ def draw_pie_chart():
     return plt.show()
 
 
-def draw_horizontal_bar_chart():
-    """ Draw horizontal bars """
-    # Convert the Series index (keys) to a list
-    keys_list = df['Region'].value_counts().index.tolist()
+def draw_line_chart(dataframe):
+    """ Function to create a horizontal line chart.
+    Arguments: A dataframe with a column "Country" and "Board Approval Date".
+    """
 
-    # Convert the Series values to a list
-    values_list = df['Region'].value_counts().tolist()
-
-    # Set the figure size
-    plt.figure(figsize=(12, 8))
-
-    # Create a horizontal bar chart
-    plt.barh(keys_list, values_list, color=colors)
-
-    # Add labels to the bars
-    for i in range(len(keys_list)):
-        plt.text(values_list[i], i, f'{values_list[i]}', ha='left', va='center')
-
-    # Add a title and labels to the axes
-    plt.title('Breakdown of loans by regions from 1971 to 2023')
-    plt.xlabel('Number of loans')
-    plt.ylabel('Regions')
-
-    # Create a custom legend with different colored patches
-    legend_labels = keys_list
-    legend_handles = [mpatches.Patch(color=colors[i], label=legend_labels[i]) for i in range(len(legend_labels))]
-    plt.legend(handles=legend_handles, loc="best")
-
-    # Save the plot as an image
-    plt.savefig('horizontal_chart.png')
-
-    # Show the chart
-    return plt.show()
-
-
-def draw_line_chart():
-    """ Draws horizontal line"""
-    countries_count = df['Country'].value_counts()
+    countries_count = dataframe['Country'].value_counts()
     countries = countries_count.index.tolist()
 
     # Convert 'Board Approval Date' to datetime
-    df['Board Approval Date'] = pd.to_datetime(df['Board Approval Date'])
+    dataframe['Board Approval Date'] = pd.to_datetime(dataframe['Board Approval Date'])
 
     # Extract the year from 'Board Approval Date'
-    df['Year'] = df['Board Approval Date'].dt.year
+    dataframe['Year'] = dataframe['Board Approval Date'].dt.year
 
     # Filter the data for rows where the 'Country' is in the list of highest borrowers
     # and Board Approval Date year is 2000 or later
-    df_filtered = df[(df['Country'].isin(countries[:10])) & (df['Year'] >= 2000)]
+    df_filtered = dataframe[(dataframe['Country'].isin(countries[:10])) & (dataframe['Year'] >= 2000)]
 
     # Create a pivot table to combine data for 'India' and 'Sudan' over the years
     pivot_table = df_filtered.pivot_table(index='Year', columns='Country', values='Disbursed Amount (US$)',
                                           aggfunc='sum', fill_value=0)
 
-    # Create the line chart with different colors
+    # Increase the image size to 12 inches wide and 10 inches high
     plt.figure(figsize=(12, 10))
 
     for i, country in enumerate(countries[:10]):
@@ -95,7 +64,7 @@ def draw_line_chart():
     plt.gca().yaxis.set_major_formatter(y_format)
 
     # Set labeling
-    plt.title('Loan Disbursed to the Top 8 borrowers Over Time (Since 2000)')
+    plt.title('Loan Disbursed to the Top 10 borrowers Over Time (Since 2000)')
     plt.xlabel('Loan Year')
     plt.ylabel('Disbursed Amount (Billions of US$)')
 
@@ -110,11 +79,14 @@ def draw_line_chart():
     return plt.show()
 
 
-def grouped_bar_chart():
-    """ Draws a grouped bar chart  """
+def grouped_bar_chart(dataframe):
+    """ Function to create a grouped bar chart.
+    Arguments: A dataframe with a column "Country" and "Board Approval Date".
+    """
     # Extract the specified columns
-    df_data = df[['Region', 'Original Principal Amount (US$)', 'Cancelled Amount (US$)', 'Disbursed Amount (US$)',
-                  'Repaid to IDA (US$)', 'Due to IDA (US$)']]
+    df_data = dataframe[
+        ['Region', 'Original Principal Amount (US$)', 'Cancelled Amount (US$)', 'Disbursed Amount (US$)',
+         'Repaid to IDA (US$)', 'Due to IDA (US$)']]
 
     # Group data by 'Region' and sum the values for each category
     grouped_data = df_data.groupby('Region').sum()
@@ -123,7 +95,7 @@ def grouped_bar_chart():
     bar_width = 0.15
     bar_positions = range(len(grouped_data))
 
-    # Create a grouped bar chart
+    # Increase the image size to 20 inches wide and 8 inches high
     fig, ax = plt.subplots(figsize=(20, 8))
 
     # Define the categories and corresponding colors
@@ -159,15 +131,14 @@ def grouped_bar_chart():
 
 
 if __name__ == "__main__":
-    # Load data from CSV file
+    """ Load data from CSV file """
     df = pd.read_csv('./IDA_Statement_of_Credits_and_Grants__-_Latest_Available_Snapshot_20231101.csv')
 
     # Define constant chart colors and spacing
-    colors = ['#191970', '#001CF0', '#0038E2', '#0055D4', '#0071C6', '#008DB8',
-              '#00AAAA', '#00C69C', '#00E28E', '#00FF80']
+    colors = ['#191970', '#FF8D33', '#00BBFD', '#0055D4', '#0071C6', '#008DB8', '#00AAAA',
+              '#00C69C', '#A052C2', '#00FF80']
     explode = (0, 0, 0, 0.1, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8)
 
-    draw_line_chart()  # draws line chart
-    draw_pie_chart()  # draws pie chart
-    draw_horizontal_bar_chart()  # draws bar chart
-    grouped_bar_chart()  # draws bar chart
+    draw_line_chart(df)  # draws line chart
+    draw_pie_chart(df)  # draws pie chart
+    grouped_bar_chart(df)  # draws bar chart
